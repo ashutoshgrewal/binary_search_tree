@@ -92,10 +92,106 @@ search (node_t *root, int value)
     }
 }
 
+static node_t *
+find_node_with_val (node_t *node, int val, node_t **parent)
+{
+    *parent = NULL; 
+    while (node) {
+        if (node->value == val) {
+            break;
+        }
+        *parent = node;
+        if (val > node->value) {
+            node = node->right;
+        } else {
+            node = node->left;
+        }
+    }
+    return node;
+}
+
+static node_t *
+find_successor (node_t *node, node_t **successor_parent)
+{
+    node = node->right;
+    *successor_parent = node;
+
+    while (node->left != NULL) {
+        node = node->left;
+        *successor_parent = node;
+    }
+
+    return node;
+}
+
+static void
+swap_node_with_successor (node_t *node, node_t *successor)
+{
+    int temp;
+
+    temp = node->value;
+    node->value = successor->value;
+    successor->value = temp;
+}
+
+static void
+delete_node (node_t **root, node_t *node, node_t *parent)
+{
+    if (node->right == NULL && node->left == NULL) {
+        if (parent == NULL) {
+            *root = NULL;
+        } else {
+            if (parent->left == node) {
+                parent->left = NULL;
+            } else {
+                parent->right = NULL;
+            }
+        }
+        free(node);
+    } else if (node->right != NULL && node->left == NULL) {
+        if (parent == NULL) {
+            *root = node->right;
+        } else {
+            if (parent->left == node) {
+                parent->left = node->right;
+            } else {
+                parent->right = node->right;
+            }
+        }
+        free(node);
+    } else if (node->right == NULL && node->left != NULL) {
+        if (parent == NULL) {
+            *root = node->left;
+        } else {
+            if (parent->left == node) {
+                parent->left = node->left;
+            } else {
+                parent->right = node->left;
+            }
+        }
+        free(node);
+    } else {
+        node_t *successor, *sucessor_parent;
+        successor = find_successor(node, &sucessor_parent);
+        swap_node_with_successor(node, successor);
+        delete_node(successor, sucessor_parent);
+        //TBD Mamta
+    }
+}
+
 bool
 delete (node_t **root, int value)
 {
-    //TBD
+    node_t *parent, *node;
+
+    node = find_node_with_val(*root, value, &parent);
+
+    if (node == NULL) {
+        return false;
+    }
+
+    delete_node(root, node, parent);
+    return true;
 }
 
 int
