@@ -113,8 +113,8 @@ find_node_with_val (node_t *node, int val, node_t **parent)
 static node_t *
 find_successor (node_t *node, node_t **successor_parent)
 {
-    node = node->right;
     *successor_parent = node;
+    node = node->right;
 
     while (node->left != NULL) {
         node = node->left;
@@ -138,6 +138,9 @@ static void
 delete_node (node_t **root, node_t *node, node_t *parent)
 {
     if (node->right == NULL && node->left == NULL) {
+        /*
+         * The affected node has no children.
+         */
         if (parent == NULL) {
             *root = NULL;
         } else {
@@ -149,6 +152,9 @@ delete_node (node_t **root, node_t *node, node_t *parent)
         }
         free(node);
     } else if (node->right != NULL && node->left == NULL) {
+        /*
+         * The affected node has one child, on it's right.
+         */
         if (parent == NULL) {
             *root = node->right;
         } else {
@@ -160,6 +166,9 @@ delete_node (node_t **root, node_t *node, node_t *parent)
         }
         free(node);
     } else if (node->right == NULL && node->left != NULL) {
+        /*
+         * The affected node has one child, on it's left.
+         */
         if (parent == NULL) {
             *root = node->left;
         } else {
@@ -171,11 +180,14 @@ delete_node (node_t **root, node_t *node, node_t *parent)
         }
         free(node);
     } else {
+        /*
+         * The affected node has two children.
+         */
         node_t *successor, *sucessor_parent;
+
         successor = find_successor(node, &sucessor_parent);
         swap_node_with_successor(node, successor);
-        delete_node(successor, sucessor_parent);
-        //TBD Mamta
+        delete_node(root, successor, sucessor_parent);
     }
 }
 
@@ -210,5 +222,12 @@ main ()
     //Search
     assert(search(root, 3) == true);
     assert(search(root, 4) == false);
+
+    //Delete
+    assert(delete(&root, 4) == false);
+    assert(delete(&root, 1) == true);
+    assert(insert(&root, 1) == true);
+    assert(delete(&root, 2) == true);
+    
     return 0;
 }
